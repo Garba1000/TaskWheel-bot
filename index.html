@@ -97,7 +97,7 @@ let energy = parseInt(localStorage.getItem("energy")||"50");
 let wheelTaskCount = parseInt(localStorage.getItem("wheelTaskCount")||"0");
 
 const totalTasks = 10;
-const taskIds = ["task-24541","task-24542","task-24543","task-24544","task-24545","task-24546"];
+const taskIds = ["task-26503","task-26504","task-26505","task-26506","task-26507","task-26508"];
 
 function updateUI(){
 document.getElementById("points").innerText=points;
@@ -142,7 +142,7 @@ saveState();
 updateUI();
 }else{
 try{
-const rewardAd=window.Adsgram.init({blockId:"24547"});
+const rewardAd=window.Adsgram.init({blockId:"26502"});
 rewardAd.show().then(res=>{
 if(res.done){
 energy+=5;
