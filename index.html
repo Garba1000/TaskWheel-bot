@@ -29,14 +29,15 @@ Today Tap: <span id="dailyTap">0</span>/500
 
 <div class="btn" id="tapBtn">⚡ Tap to Earn 1 Point</div>
 
-<!-- BONUS AD -->
 <div class="btn" onclick="watchBonusAd()">🎁 Watch Ad for +20 Points</div>
 
 <div class="section">
 <h2>📋 Tasks</h2>
 <div class="btn" id="startTasksBtn">📋 Task & Earn 50 Points</div>
 <div id="adsgram-container"></div>
-<div id="taskProgress"><div id="taskProgressBar">0/10</div></div>
+<div id="taskProgress">
+  <div id="taskProgressBar">0/10</div>
+</div>
 </div>
 
 <div class="section">
@@ -150,12 +151,24 @@ updateUI();
 });
 };
 
-/* WITHDRAW */
+/* WITHDRAW (FINAL FIXED) */
 document.getElementById("withdrawBtn").onclick = ()=>{
+
 let amount = parseInt(document.getElementById("amount").value);
 
+/* MUST HAVE 15K TOTAL */
+if(points < 15000){
+alert("❌ You need at least 15,000 points to withdraw");
+return;
+}
+
+if(isNaN(amount) || amount <= 0){
+alert("Enter valid amount");
+return;
+}
+
 if(amount < 15000){
-alert("Minimum is 15,000 points");
+alert("Minimum withdrawal is 15,000 points");
 return;
 }
 
@@ -164,6 +177,7 @@ alert("Not enough points");
 return;
 }
 
+/* SEND */
 points -= amount;
 localStorage.setItem("points",points);
 updateUI();
@@ -173,7 +187,7 @@ type:"withdraw",
 amount:amount
 }));
 
-alert("✅ Request sent");
+alert("✅ Withdrawal request sent!");
 };
 
 /* REF */
