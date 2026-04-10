@@ -33,15 +33,15 @@ Today Tap: <span id="dailyTap">0</span>/500
 <div class="btn" onclick="watchBonusAd()">🎁 Watch Ad for +20 Points</div>
 
 <div class="section">
-<h2>📋 Tasks (Optional Ads)</h2>
-<div class="btn" id="startTasksBtn">▶️ Watch Ad & Earn</div>
+<h2>📋 Tasks</h2>
+<div class="btn" id="startTasksBtn">📋 Task & Earn 50 Points</div>
 <div id="adsgram-container"></div>
 <div id="taskProgress"><div id="taskProgressBar">0/10</div></div>
 </div>
 
 <div class="section">
 <h2>💳 Withdraw</h2>
-<p><b>Minimum withdrawal: 50,000 points</b></p>
+<p><b>Minimum withdrawal: 15,000 points</b></p>
 
 <select id="method">
 <option>Litecoin</option>
@@ -94,7 +94,7 @@ document.getElementById("dailyTap").innerText = dailyTap;
 }
 updateUI();
 
-/* TAP (NO ENERGY) */
+/* TAP */
 document.getElementById("tapBtn").onclick = ()=>{
 if(dailyTap >= 500){
 alert("🚫 Daily tap limit reached (500)");
@@ -128,7 +128,7 @@ const taskIds = ["task-26509","task-26510","task-26511"];
 let taskCount = 0;
 
 document.getElementById("startTasksBtn").onclick = ()=>{
-if(!confirm("Watch ad to earn reward?")) return;
+if(!confirm("Watch ad to earn 50 points?")) return;
 
 const block = taskIds[Math.floor(Math.random()*taskIds.length)];
 
@@ -154,8 +154,8 @@ updateUI();
 document.getElementById("withdrawBtn").onclick = ()=>{
 let amount = parseInt(document.getElementById("amount").value);
 
-if(amount < 20000){
-alert("Minimum is 20,000 points");
+if(amount < 15000){
+alert("Minimum is 15,000 points");
 return;
 }
 
