@@ -68,6 +68,12 @@ Today Tap: <span id="dailyTap">0</span>/500
 <script>
 const webApp = Telegram.WebApp;
 
+/* SAFE NUMBER FUNCTION */
+function getSafeNumber(key){
+let val = parseInt(localStorage.getItem(key));
+return isNaN(val) ? 0 : val;
+}
+
 /* INIT */
 if(!localStorage.getItem("init")){
 localStorage.setItem("points","0");
@@ -76,8 +82,8 @@ localStorage.setItem("lastDate", new Date().toDateString());
 localStorage.setItem("init","yes");
 }
 
-let points = parseInt(localStorage.getItem("points")||0);
-let dailyTap = parseInt(localStorage.getItem("dailyTap")||0);
+let points = getSafeNumber("points");
+let dailyTap = getSafeNumber("dailyTap");
 let lastDate = localStorage.getItem("lastDate");
 
 /* RESET DAILY */
@@ -151,12 +157,11 @@ updateUI();
 });
 };
 
-/* WITHDRAW (FINAL FIXED) */
+/* WITHDRAW */
 document.getElementById("withdrawBtn").onclick = ()=>{
 
 let amount = parseInt(document.getElementById("amount").value);
 
-/* MUST HAVE 15K TOTAL */
 if(points < 15000){
 alert("❌ You need at least 15,000 points to withdraw");
 return;
@@ -177,7 +182,6 @@ alert("Not enough points");
 return;
 }
 
-/* SEND */
 points -= amount;
 localStorage.setItem("points",points);
 updateUI();
