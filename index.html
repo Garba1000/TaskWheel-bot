@@ -4,21 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Tap & Earn</title>
+
 <style>
 body { font-family: Arial; background:#000; color:#fff; margin:0; padding:20px;}
-h1,h2{margin-bottom:10px;}
 .section{margin-top:20px; padding:15px; background:#111; border-radius:10px;}
 .btn{display:inline-block;margin-top:10px;padding:10px 15px;border-radius:8px;background:#007bff;color:#fff;font-weight:bold;cursor:pointer;text-align:center;}
-.btn:active{transform:scale(0.95);}
-.hidden{display:none;}
-input,select{padding:8px;margin:5px 0;width:100%;border-radius:5px;border:none;}
-
-#joinPopup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;flex-direction:column;text-align:center;padding:20px;z-index:9999;}
-#joinPopup button{background:#007bff;color:#fff;padding:12px 20px;margin-top:20px;border:none;border-radius:10px;font-weight:bold;font-size:18px;cursor:pointer;}
-
-#wheelContainer{margin-top:15px;text-align:center;}
-#wheel{width:150px;height:150px;margin:10px auto;border:5px solid #007bff;border-radius:50%;background: conic-gradient(#007bff 0deg 60deg,#111 60deg 120deg,#007bff 120deg 180deg,#111 180deg 240deg,#007bff 240deg 300deg,#111 300deg 360deg);transition: transform 3s cubic-bezier(0.33,1,0.68,1);}
-#rewardMessage{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#007bff;color:#fff;padding:15px 20px;border-radius:10px;font-weight:bold;display:none;z-index:9999;}
 #taskProgress{margin-top:10px;height:20px;width:100%;background:#333;border-radius:10px;overflow:hidden;}
 #taskProgressBar{height:100%;width:0%;background:#007bff;text-align:center;line-height:20px;font-weight:bold;color:#fff;}
 </style>
@@ -26,240 +16,175 @@ input,select{padding:8px;margin:5px 0;width:100%;border-radius:5px;border:none;}
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 </head>
+
 <body>
 
-<div id="joinPopup">
-<h2>📢 Join Our Telegram Channel to Continue</h2>
-<p>You can still use the app without joining.</p>
-<button onclick="joinChannelClicked()">👉 Join @earnzoners</button>
-<div class="btn" onclick="skipJoin()">Skip</div>
-</div>
-
-<div id="mainPage" style="display:none;">
+<div id="mainPage">
 <h1>⚡ Real Tap & Earn</h1>
-<p>Points: <span id="points">0</span> | Energy: <span id="energy">50</span></p>
 
-<div class="btn" id="tapBtn">⚡ Tap to convert 1 Energy → 1 Point</div>
+<p>
+Points: <span id="points">0</span> | 
+Today Tap: <span id="dailyTap">0</span>/500
+</p>
 
-<!-- ✅ NEW OPTIONAL BONUS -->
-<div class="btn" onclick="watchBonusAd()">🎁 Watch Ad for +10 Energy</div>
+<div class="btn" id="tapBtn">⚡ Tap to Earn 1 Point</div>
 
-<div id="wheelContainer">
-<div id="wheel"></div>
-<div class="btn" id="wheelBtn">🎡 Tap Wheel</div>
+<!-- BONUS AD -->
+<div class="btn" onclick="watchBonusAd()">🎁 Watch Ad for +20 Points</div>
+
+<div class="section">
+<h2>📋 Tasks (Optional Ads)</h2>
+<div class="btn" id="startTasksBtn">▶️ Watch Ad & Earn</div>
+<div id="adsgram-container"></div>
 <div id="taskProgress"><div id="taskProgressBar">0/10</div></div>
 </div>
 
 <div class="section">
-<h2>📋 Tasks</h2>
-<div class="btn" id="startTasksBtn">▶️ Start Task (Optional Ad)</div>
-<div id="adsgram-container" class="hidden"></div>
-</div>
-
-<div class="section">
 <h2>💳 Withdraw</h2>
-<p><b>Minimum withdrawal is 50,000 points ($70)</b></p>
-<label>Method:</label>
+<p><b>Minimum withdrawal: 50,000 points</b></p>
+
 <select id="method">
-<option value="Litecoin">Litecoin</option>
-<option value="USDT">USDT</option>
-<option value="Payeer">Payeer</option>
-<option value="Bank">Bank Account</option>
+<option>Litecoin</option>
+<option>USDT</option>
+<option>Payeer</option>
+<option>Bank</option>
 </select>
-<label>Wallet/Account:</label>
-<input type="text" id="address" placeholder="Enter wallet or account"/>
-<label>Amount:</label>
-<input type="number" id="amount" placeholder="Minimum 50000"/>
+
+<input id="address" placeholder="Enter wallet/account"/>
+<input id="amount" type="number" placeholder="Enter amount"/>
+
 <div class="btn" id="withdrawBtn">Request Withdraw</div>
 </div>
 
 <div class="section">
-<h2>👥 Referral Program</h2>
-<p>Your referral link:</p>
-<input type="text" id="refLink" readonly/>
-<div class="btn" id="copyRefBtn">Copy Link</div>
+<h2>👥 Referral</h2>
+<input id="refLink" readonly/>
+<div class="btn" id="copyRefBtn">Copy</div>
 </div>
 
 </div>
-
-<div id="rewardMessage">🎉 You're successful receive 1000 energy</div>
 
 <script>
 const webApp = Telegram.WebApp;
 
 /* INIT */
-if(!localStorage.getItem("firstLaunch")){
+if(!localStorage.getItem("init")){
 localStorage.setItem("points","0");
-localStorage.setItem("energy","50");
-localStorage.setItem("wheelTaskCount","0");
-localStorage.setItem("firstLaunch","yes");
+localStorage.setItem("dailyTap","0");
+localStorage.setItem("lastDate", new Date().toDateString());
+localStorage.setItem("init","yes");
 }
 
-let points = parseInt(localStorage.getItem("points")||"0");
-let energy = parseInt(localStorage.getItem("energy")||"50");
-let wheelTaskCount = parseInt(localStorage.getItem("wheelTaskCount")||"0");
+let points = parseInt(localStorage.getItem("points")||0);
+let dailyTap = parseInt(localStorage.getItem("dailyTap")||0);
+let lastDate = localStorage.getItem("lastDate");
 
-const totalTasks = 10;
-const taskIds = ["task-26509","task-26510","task-26511","task-26506","task-26507","task-26508"];
+/* RESET DAILY */
+const today = new Date().toDateString();
+if(today !== lastDate){
+dailyTap = 0;
+localStorage.setItem("dailyTap",0);
+localStorage.setItem("lastDate", today);
+}
 
+/* UI */
 function updateUI(){
-document.getElementById("points").innerText=points;
-document.getElementById("energy").innerText=energy;
+document.getElementById("points").innerText = points;
+document.getElementById("dailyTap").innerText = dailyTap;
 }
-
-function saveState(){
-localStorage.setItem("points",points);
-localStorage.setItem("energy",energy);
-}
-
-function updateProgressBar(){
-const bar=document.getElementById("taskProgressBar");
-bar.style.width=((wheelTaskCount/totalTasks)*100)+"%";
-bar.innerText=`${wheelTaskCount}/${totalTasks}`;
-}
-
-/* JOIN */
-function joinChannelClicked(){
-window.open("https://t.me/crytocurrentupdate","_blank");
-document.getElementById("joinPopup").style.display="none";
-document.getElementById("mainPage").style.display="block";
-}
-
-function skipJoin(){
-document.getElementById("joinPopup").style.display="none";
-document.getElementById("mainPage").style.display="block";
-}
-
-/* TAP */
-document.getElementById("tapBtn").addEventListener("click",()=>{
-if(energy>0){
-energy-=1;
-points+=1;
-saveState();
 updateUI();
-}else{
-if(confirm("Watch ad to get +5 energy?")){
-const rewardAd=window.Adsgram.init({blockId:"26502"});
-rewardAd.show().then(res=>{
-if(res.done){
-energy+=5;
-saveState();
-updateUI();
-}
-});
-}
-}
-});
 
-/* BONUS AD */
-function watchBonusAd(){
-const rewardAd = window.Adsgram.init({blockId:"26503"});
-rewardAd.show().then(res=>{
-if(res.done){
-energy+=10;
-saveState();
-updateUI();
-alert("🎉 You got +10 energy!");
-}
-});
-}
-
-/* WHEEL */
-const wheel = document.getElementById("wheel");
-const wheelBtn = document.getElementById("wheelBtn");
-
-function spinWheel(){
-const randomDeg=Math.floor(Math.random()*360)+720;
-wheel.style.transform=`rotate(${randomDeg}deg)`;
-}
-
-wheelBtn.addEventListener("click",()=>{
-spinWheel();
-});
-
-/* TASKS (FIXED SAFE) */
-document.getElementById("startTasksBtn").addEventListener("click",()=>{
-
-if(!confirm("Watch ad to complete task and earn reward?")) return;
-
-const randomBlock = taskIds[Math.floor(Math.random()*taskIds.length)];
-const container=document.getElementById("adsgram-container");
-
-container.innerHTML=`<adsgram-task class="task" data-block-id="${randomBlock}"></adsgram-task>`;
-container.classList.remove("hidden");
-
-const task = container.querySelector(".task");
-
-task.addEventListener("reward",()=>{
-
-wheelTaskCount++;
-localStorage.setItem("wheelTaskCount",wheelTaskCount);
-updateProgressBar();
-
-if(wheelTaskCount>=totalTasks){
-energy+=1000;
-saveState();
-updateUI();
-document.getElementById("rewardMessage").style.display="block";
-setTimeout(()=>{document.getElementById("rewardMessage").style.display="none";},3000);
-}
-
-});
-
-});
-
-/* WITHDRAW */
-document.getElementById("withdrawBtn").addEventListener("click",()=>{
-const method=document.getElementById("method").value;
-const address=document.getElementById("address").value.trim();
-const amount=parseInt(document.getElementById("amount").value);
-
-if(isNaN(amount)||amount<50000){
-alert("Minimum withdrawal is 50,000 points ($70)");
+/* TAP (NO ENERGY) */
+document.getElementById("tapBtn").onclick = ()=>{
+if(dailyTap >= 500){
+alert("🚫 Daily tap limit reached (500)");
 return;
 }
 
-if(points<amount){
+points += 1;
+dailyTap += 1;
+
+localStorage.setItem("points",points);
+localStorage.setItem("dailyTap",dailyTap);
+
+updateUI();
+};
+
+/* BONUS AD */
+function watchBonusAd(){
+const ad = Adsgram.init({blockId:"26503"});
+ad.show().then(res=>{
+if(res.done){
+points += 20;
+localStorage.setItem("points",points);
+updateUI();
+alert("🎉 +20 points added!");
+}
+});
+}
+
+/* TASKS */
+const taskIds = ["task-26509","task-26510","task-26511"];
+let taskCount = 0;
+
+document.getElementById("startTasksBtn").onclick = ()=>{
+if(!confirm("Watch ad to earn reward?")) return;
+
+const block = taskIds[Math.floor(Math.random()*taskIds.length)];
+
+const container = document.getElementById("adsgram-container");
+container.innerHTML = `<adsgram-task data-block-id="${block}"></adsgram-task>`;
+
+const task = container.querySelector("adsgram-task");
+
+task.addEventListener("reward",()=>{
+points += 50;
+taskCount++;
+
+localStorage.setItem("points",points);
+
+document.getElementById("taskProgressBar").style.width = (taskCount*10)+"%";
+document.getElementById("taskProgressBar").innerText = taskCount+"/10";
+
+updateUI();
+});
+};
+
+/* WITHDRAW */
+document.getElementById("withdrawBtn").onclick = ()=>{
+let amount = parseInt(document.getElementById("amount").value);
+
+if(amount < 20000){
+alert("Minimum is 20,000 points");
+return;
+}
+
+if(points < amount){
 alert("Not enough points");
 return;
 }
 
-const user=webApp.initDataUnsafe.user||{};
-
-const msg=JSON.stringify({
-type:"withdraw_request",
-user_id:user.id,
-username:user.username||"No username",
-amount,
-method,
-address
-});
-
-Telegram.WebApp.sendData(msg);
-
-points-=amount;
-saveState();
+points -= amount;
+localStorage.setItem("points",points);
 updateUI();
 
-alert("✅ Withdrawal request sent!");
-});
+Telegram.WebApp.sendData(JSON.stringify({
+type:"withdraw",
+amount:amount
+}));
+
+alert("✅ Request sent");
+};
 
 /* REF */
-const user=webApp.initDataUnsafe.user||{};
-const userId=user.id||"guest";
+const user = webApp.initDataUnsafe.user || {};
+document.getElementById("refLink").value = 
+"https://t.me/Builderrebot?start=" + (user.id || "guest");
 
-document.getElementById("refLink").value=`https://t.me/Builderrebot?start=${userId}`;
-
-document.getElementById("copyRefBtn").addEventListener("click",()=>{
-const refInput=document.getElementById("refLink");
-refInput.select();
-document.execCommand("copy");
-});
-
-document.addEventListener("DOMContentLoaded",()=>{
-updateUI();
-updateProgressBar();
-});
+document.getElementById("copyRefBtn").onclick = ()=>{
+navigator.clipboard.writeText(document.getElementById("refLink").value);
+};
 </script>
+
 </body>
 </html>
