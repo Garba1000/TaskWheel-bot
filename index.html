@@ -17,8 +17,7 @@
 }
 
 body{
-  background:
-  radial-gradient(circle at top,#19b84d,#063517 70%);
+  background: radial-gradient(circle at top,#19b84d,#063517 70%);
   color:white;
   font-family:Arial,sans-serif;
   padding:15px;
@@ -110,7 +109,7 @@ input,select{
 }
 
 /* =========================
-   NEW SPIN SPINNER DESIGN
+   SPIN WHEEL
    ========================= */
 
 #wheel{
@@ -123,25 +122,28 @@ input,select{
   align-items:center;
 }
 
-/* 3 ARM SPINNER BASE */
 .spinner{
   width:100%;
   height:100%;
   position:relative;
-  animation:floatGlow 2.5s infinite ease-in-out;
+  transform-origin:center;
 }
 
-/* ARMS */
 .arm{
   position:absolute;
   width:120px;
   height:120px;
   border-radius:50%;
-  background:radial-gradient(circle,#4de3ff,#0077ff);
+  background:conic-gradient(
+    #00ff87,
+    #60efff,
+    #ff6ec4,
+    #ffd86f,
+    #00ff87
+  );
   box-shadow:0 0 25px rgba(0,200,255,0.8);
 }
 
-/* 3 POSITIONS */
 .arm:nth-child(1){
   top:0;
   left:50%;
@@ -158,7 +160,7 @@ input,select{
   right:0;
 }
 
-/* CENTER HUB */
+/* CENTER */
 .wheel-center{
   width:90px;
   height:90px;
@@ -174,12 +176,6 @@ input,select{
   font-weight:bold;
   border:4px solid #00d4ff;
   box-shadow:0 0 20px rgba(0,200,255,0.7);
-}
-
-/* soft animation */
-@keyframes floatGlow{
-  0%,100%{transform:rotate(0deg) scale(1);}
-  50%{transform:rotate(5deg) scale(1.02);}
 }
 
 /* POINTER */
@@ -209,35 +205,6 @@ input,select{
   background:#25ff74;
 }
 
-/* JOIN POPUP */
-#joinPopup{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.85);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  z-index:9999;
-  text-align:center;
-}
-
-#joinBtn{
-  width:220px;
-  border:none;
-  padding:14px;
-  border-radius:16px;
-  margin-top:14px;
-  font-weight:bold;
-  cursor:pointer;
-  background:linear-gradient(45deg,#25ff74,#00c853);
-  color:#000;
-  font-size:15px;
-}
-
 </style>
 </head>
 
@@ -249,7 +216,7 @@ input,select{
 </div>
 
 <div class="wallet-bar">
-  <div class="wallet-card"><h3>⚡ Energy</h3><p id="energy">0</p></div>
+  <div class="wallet-card"><h3>⚡ Energy</h3><p id="energy">50</p></div>
   <div class="wallet-card"><h3>💰 PV</h3><p id="points">0</p></div>
   <div class="wallet-card"><h3>👥 Referrals</h3><p id="refs">0</p></div>
 </div>
@@ -277,13 +244,15 @@ input,select{
 
 <div class="pointer"></div>
 
-<button class="btn" id="spinBtn">
-  Spin (-10 Energy)
-</button>
+<button class="btn" id="spinBtn">Spin (-10 Energy)</button>
 
 </div>
 
-<!-- REST OF YOUR ORIGINAL CODE UNCHANGED -->
+<div class="section">
+  <h2>🎁 Daily Reward</h2>
+  <button class="btn" id="dailyBtn">Claim +3 Energy</button>
+  <div id="dailyProgressBar"><div></div></div>
+</div>
 
 <div class="section">
   <h2>📺 Reward Ad</h2>
@@ -293,12 +262,6 @@ input,select{
 <div class="section">
   <h2>🎯 Task Center</h2>
   <button class="btn" id="taskBtn">Complete Task +10 Energy</button>
-</div>
-
-<div class="section">
-  <h2>🎁 Daily Reward</h2>
-  <button class="btn" id="dailyBtn">Claim +3 Energy</button>
-  <div id="dailyProgressBar"><div></div></div>
 </div>
 
 <div class="section">
@@ -322,16 +285,57 @@ input,select{
   <button class="btn" id="withdrawBtn">Withdraw PV</button>
 </div>
 
-<!-- JOIN POPUP -->
-<div id="joinPopup">
-  <h2 style="margin-bottom:15px;">Join Our Channel</h2>
-  <button id="joinBtn">Join Channel +5 Energy</button>
-</div>
-
-<!-- YOUR JS REMAINS EXACTLY THE SAME -->
-
 <script>
-// (no logic changes needed — your original JS stays here)
+
+const wheel = document.querySelector(".spinner");
+const spinBtn = document.getElementById("spinBtn");
+
+let rotation = 0;
+
+spinBtn.addEventListener("click", () => {
+  let energy = document.getElementById("energy");
+
+  if (Number(energy.innerText) < 10) {
+    alert("Not enough energy!");
+    return;
+  }
+
+  energy.innerText = Number(energy.innerText) - 10;
+
+  let spin = 360 * 5 + Math.floor(Math.random() * 360);
+  rotation += spin;
+
+  wheel.style.transition = "transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
+  wheel.style.transform = `rotate(${rotation}deg)`;
+
+  setTimeout(() => {
+    let reward = Math.floor(Math.random() * 10) + 1;
+    document.getElementById("points").innerText =
+      Number(document.getElementById("points").innerText) + reward;
+
+    alert("You won " + reward + " PV!");
+  }, 3600);
+});
+
+/* DAILY BONUS */
+let claimed = false;
+
+document.getElementById("dailyBtn").addEventListener("click", () => {
+  if (claimed) {
+    alert("Already claimed today!");
+    return;
+  }
+
+  claimed = true;
+
+  let energy = document.getElementById("energy");
+  energy.innerText = Number(energy.innerText) + 3;
+
+  document.querySelector("#dailyProgressBar div").style.width = "100%";
+
+  alert("Daily bonus +3 Energy!");
+});
+
 </script>
 
 </body>
