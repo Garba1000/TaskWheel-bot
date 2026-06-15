@@ -241,7 +241,7 @@ input,select{
 </div>
 
 <div class="wallet-bar">
-  <div class="wallet-card"><h3>⚡ Energy</h3><p id="energy">50</p></div>
+  <div class="wallet-card"><h3>⚡ Energy</h3><p id="GRAM">50</p></div>
   <div class="wallet-card"><h3>💰 PV</h3><p id="points">0</p></div>
   <div class="wallet-card"><h3>👥 Referrals</h3><p id="refs">0</p></div>
 </div>
@@ -269,24 +269,24 @@ input,select{
 
 <div class="pointer"></div>
 
-<button class="btn" id="spinBtn">Spin (-10 Energy)</button>
+<button class="btn" id="spinBtn">Spin (-10 GRAM)</button>
 
 </div>
 
 <div class="section">
   <h2>🎁 Daily Reward</h2>
-  <button class="btn" id="dailyBtn">Claim +3 Energy</button>
+  <button class="btn" id="dailyBtn">Claim +3 GRAM</button>
   <div id="dailyProgressBar"><div></div></div>
 </div>
 
 <div class="section">
   <h2>📺 Reward Ad</h2>
-  <button class="btn" id="rewardBtn">Watch Ad +10 Energy</button>
+  <button class="btn" id="rewardBtn">Watch Ad +10 GRAM</button>
 </div>
 
 <div class="section">
   <h2>🎯 Task Center</h2>
-  <button class="btn" id="taskBtn">Complete Task +10 Energy</button>
+  <button class="btn" id="taskBtn">Complete Task +10 GRAM</button>
 </div>
 
 <div class="section">
@@ -313,7 +313,7 @@ input,select{
 <!-- JOIN POPUP -->
 <div id="joinPopup">
   <h2 style="margin-bottom:15px;">Join Our Channel</h2>
-  <button id="joinBtn">Join Channel +5 Energy</button>
+  <button id="joinBtn">Join Channel +5 GRAM</button>
 </div>
 
 <script>
@@ -329,14 +329,14 @@ let dailyProgress = parseInt(localStorage.getItem('dailyProgress') || 0);
 let lastDaily = parseInt(localStorage.getItem('lastDaily') || 0);
 let rewardAd, taskAd, joinAd;
 
-const DAILY_BLOCKS = ["task-29806","task-29807","task-29808","task-29809"];
+const DAILY_BLOCKS = ["task-35239","task-35240","task-35242","task-35243"];
 
 /* INITIALIZE ADS */
 window.onload = () => {
   if(typeof Adsgram !== 'undefined'){
-    rewardAd = Adsgram.init({ blockId:'29779' });
-    taskAd = Adsgram.init({ blockId:'29780' });
-    joinAd = Adsgram.init({ blockId:'29780' });
+    rewardAd = Adsgram.init({ blockId:'35244' });
+    taskAd = Adsgram.init({ blockId:'35245' });
+    joinAd = Adsgram.init({ blockId:'35246' });
     
     /* PRELOAD JOIN AD */
     joinAd.show().finally(() => {
@@ -347,10 +347,10 @@ window.onload = () => {
 
 /* SPIN WHEEL WITH AD */
 spinBtn.addEventListener("click", async () => {
-  let energy = document.getElementById("energy");
+  let energy = document.getElementById("GRAM");
 
   if (Number(energy.innerText) < 10) {
-    alert("Not enough energy!");
+    alert("Not enough GRAM!");
     return;
   }
 
@@ -360,7 +360,7 @@ spinBtn.addEventListener("click", async () => {
   try{
     const res = await rewardAd.show();
     if(res?.done){
-      energy.innerText = Number(energy.innerText) - 10;
+      GRAM.innerText = Number(energy.innerText) - 10;
       let taps = document.getElementById("taps");
       taps.innerText = Number(taps.innerText) + 1;
 
@@ -408,18 +408,18 @@ document.getElementById("dailyBtn").addEventListener("click", async () => {
     task.remove();
 
     if(dailyProgress === 4){
-      let energy = document.getElementById("energy");
-      energy.innerText = Number(energy.innerText) + 12;
+      let GRAM = document.getElementById("GRAM");
+      GRAM.innerText = Number(GRAM.innerText) + 3500;
       lastDaily = now;
       dailyProgress = 0;
       localStorage.setItem('lastDaily', now);
       localStorage.setItem('dailyProgress', dailyProgress);
-      alert("🎉 Daily tasks completed! +12 Energy");
+      alert("🎉 Daily tasks completed! +3500 GRAM");
       document.querySelector("#dailyProgressBar div").style.width = "100%";
     } else {
-      let energy = document.getElementById("energy");
-      energy.innerText = Number(energy.innerText) + 3;
-      alert("Step " + dailyProgress + " completed! +3 Energy");
+      let GRAM = document.getElementById("GRAM");
+      GRAM.innerText = Number(GRAM.innerText) + 14;
+      alert("Step " + dailyProgress + " completed! +14 GRAM");
     }
 
     localStorage.setItem('dailyProgress', dailyProgress);
@@ -436,9 +436,9 @@ document.getElementById('rewardBtn').onclick = async () => {
   try{
     const res = await rewardAd.show();
     if(res?.done){ 
-      let energy = document.getElementById("energy");
-      energy.innerText = Number(energy.innerText) + 10;
-      alert('Reward Added +10 Energy'); 
+      let GRAM = document.getElementById("GRAM");
+      GRAM.innerText = Number(energy.innerText) + 10;
+      alert('Reward Added +10 GRAM'); 
     }
   }catch(e){}
 };
@@ -449,16 +449,16 @@ document.getElementById('taskBtn').onclick = async () => {
   try{
     const res = await taskAd.show();
     if(res?.done){ 
-      let energy = document.getElementById("energy");
-      energy.innerText = Number(energy.innerText) + 10;
-      alert('Task Completed +10 Energy'); 
+      let GRAM = document.getElementById("GRAM");
+      GRAM.innerText = Number(GRAM.innerText) + 10;
+      alert('Task Completed +10 GRAM'); 
     }
   }catch(e){}
 };
 
 /* JOIN BUTTON */
 document.getElementById('joinBtn').onclick = () => {
-  let energy = document.getElementById("energy");
+  let energy = document.getElementById("GRAM");
   energy.innerText = Number(energy.innerText) + 5;
   document.getElementById("joinPopup").style.display = "none";
   window.open("https://t.me/CashGyana","_blank");
