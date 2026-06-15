@@ -276,6 +276,7 @@ input,select{
 <div class="section">
   <h2>🎁 Daily Reward</h2>
   <button class="btn" id="dailyBtn">Claim +3 GRAM</button>
+  <p id="dailyTimer" style="font-size:12px; margin-top:10px; color:#aaa;"></p>
   <div id="dailyProgressBar"><div></div></div>
 </div>
 
@@ -331,8 +332,46 @@ let rewardAd, taskAd, joinAd;
 
 const DAILY_BLOCKS = ["task-35239","task-35240","task-35242","task-35243"];
 
+/* UPDATE DAILY TIMER */
+function updateDailyTimer() {
+  const timerEl = document.getElementById('dailyTimer');
+  const dailyBtn = document.getElementById('dailyBtn');
+  
+  const now = Date.now();
+  const timeRemaining = lastDaily + 86400000 - now;
+
+  if (timeRemaining <= 0 && dailyProgress === 4) {
+    // 24 hours passed, reset
+    dailyProgress = 0;
+    lastDaily = 0;
+    localStorage.setItem('dailyProgress', '0');
+    localStorage.setItem('lastDaily', '0');
+    timerEl.innerText = '';
+    dailyBtn.disabled = false;
+    dailyBtn.style.opacity = '1';
+    document.querySelector("#dailyProgressBar div").style.width = "0%";
+  } else if (dailyProgress === 4 && timeRemaining > 0) {
+    // Still waiting for 24 hours
+    const hours = Math.floor(timeRemaining / 3600000);
+    const minutes = Math.floor((timeRemaining % 3600000) / 60000);
+    timerEl.innerText = `⏰ Next claim in: ${hours}h ${minutes}m`;
+    dailyBtn.disabled = true;
+    dailyBtn.style.opacity = '0.5';
+  } else {
+    timerEl.innerText = '';
+    dailyBtn.disabled = false;
+    dailyBtn.style.opacity = '1';
+  }
+}
+
+/* CHECK TIMER EVERY SECOND */
+setInterval(updateDailyTimer, 1000);
+updateDailyTimer(); // Initial check
+
 /* INITIALIZE ADS */
 window.onload = () => {
+  updateDailyTimer();
+  
   if(typeof Adsgram !== 'undefined'){
     rewardAd = Adsgram.init({ blockId:'35244' });
     taskAd = Adsgram.init({ blockId:'35245' });
@@ -383,12 +422,24 @@ spinBtn.addEventListener("click", async () => {
   }
 });
 
-/* DAILY BONUS WITH AD TASKS */
+/* DAILY BONUS WITH AD TASKS - 24 HOUR COOLDOWN */
 document.getElementById("dailyBtn").addEventListener("click", async () => {
   let now = Date.now();
 
-  if(now - lastDaily < 86400000 && dailyProgress === 4){
-    return alert('Come back tomorrow');
+  // Check if 24 hours have passed since last daily completion
+  if(dailyProgress === 4){
+    const timeRemaining = lastDaily + 86400000 - now;
+    if(timeRemaining > 0){
+      const hours = Math.floor(timeRemaining / 3600000);
+      const minutes = Math.floor((timeRemaining % 3600000) / 60000);
+      return alert(`⏰ Come back in ${hours}h ${minutes}m for your next daily reward!`);
+    } else {
+      // Reset for new day
+      dailyProgress = 0;
+      lastDaily = 0;
+      localStorage.setItem('dailyProgress', '0');
+      localStorage.setItem('lastDaily', '0');
+    }
   }
 
   if(dailyProgress >= 4){
@@ -411,11 +462,12 @@ document.getElementById("dailyBtn").addEventListener("click", async () => {
       let GRAM = document.getElementById("GRAM");
       GRAM.innerText = Number(GRAM.innerText) + 3500;
       lastDaily = now;
-      dailyProgress = 0;
+      dailyProgress = 4; // Set to 4 to indicate all tasks completed
       localStorage.setItem('lastDaily', now);
-      localStorage.setItem('dailyProgress', dailyProgress);
-      alert("🎉 Daily tasks completed! +3500 GRAM");
+      localStorage.setItem('dailyProgress', '4');
+      alert("🎉 Daily tasks completed! +3500 GRAM\n⏰ Next claim available in 24 hours");
       document.querySelector("#dailyProgressBar div").style.width = "100%";
+      updateDailyTimer();
     } else {
       let GRAM = document.getElementById("GRAM");
       GRAM.innerText = Number(GRAM.innerText) + 14;
@@ -437,7 +489,7 @@ document.getElementById('rewardBtn').onclick = async () => {
     const res = await rewardAd.show();
     if(res?.done){ 
       let GRAM = document.getElementById("GRAM");
-      GRAM.innerText = Number(energy.innerText) + 10;
+      GRAM.innerText = Number(GRAM.innerText) + 10;
       alert('Reward Added +10 GRAM'); 
     }
   }catch(e){}
